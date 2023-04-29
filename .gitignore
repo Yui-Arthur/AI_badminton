@@ -1,0 +1,5 @@
+part1/
+dataset/
+*.zip
+yolo*
+tempCodeRunnerFile.py
