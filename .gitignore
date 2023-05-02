@@ -3,3 +3,4 @@ dataset/
 *.zip
 yolo*
 tempCodeRunnerFile.py
+inference.py
