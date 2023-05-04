@@ -11,8 +11,7 @@ import math
 def get_labels_and_frame(video_folder , imgs_folder, labels_folder):
     
     check_path = labels_folder / f"{video_folder.name}.csv"
-    print(video_folder)
-
+    print(video_folder , str(imgs_folder).split('\\')[1])
     if check_path.exists():
         return
 
@@ -22,11 +21,13 @@ def get_labels_and_frame(video_folder , imgs_folder, labels_folder):
     append_label = pd.DataFrame(columns=labels.columns)
 
     # 參數 - 要選幾張連接的打擊圖
-    pick_hit_frame = 3
-    pick_non_hit_frame = [-10 , 10]
+    pick_hit_frame = 1
+    pick_non_hit_frame = [-3 ,-2 ,2, 3]
+    random_size = 4 if str(imgs_folder).split('\\')[1] == 'train' else 12
     pick_frame = [i - math.floor(pick_hit_frame / 2) for i in range(pick_hit_frame)] + pick_non_hit_frame
-    target_frame_num = pick_hit_frame * 2 *  len(labels['HitFrame'])
-    
+    target_frame_num = (pick_hit_frame + len(pick_non_hit_frame) + random_size) *  len(labels['HitFrame'])
+    random_idx = []
+
     for idx , sublabel in labels[['HitFrame' , 'ShotSeq']].iterrows():
         sample_label = labels.loc[labels['HitFrame'] == sublabel['HitFrame']]
         label = pd.DataFrame(columns=labels.columns)
@@ -45,7 +46,6 @@ def get_labels_and_frame(video_folder , imgs_folder, labels_folder):
     cap = cv2.VideoCapture(f'{video_folder}/{video_folder.name}.mp4')
     video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-
     capture_frame = [i + j for i in labels['HitFrame'] for j in pick_frame]
 
 
@@ -54,8 +54,13 @@ def get_labels_and_frame(video_folder , imgs_folder, labels_folder):
 
         if random_frame not in capture_frame:
             capture_frame.append(random_frame)
+            random_idx.append(random_frame)
 
     capture_frame = sorted(capture_frame)
+
+    print(f"    HitFrame {pick_hit_frame * len(labels['HitFrame'])}")
+    print(f"    NonHitFrame {len(pick_non_hit_frame ) * len(labels['HitFrame'])}")
+    print(f"    MoveFrame {len(random_idx)}")
 
 
     idx = 0
@@ -82,9 +87,11 @@ def get_labels_and_frame(video_folder , imgs_folder, labels_folder):
 
             # cv2.imshow('frame', frame)
             if idx in append_label['HitFrame'].values:
-                cv2.imwrite(str(imgs_folder / f"{video_folder.name}_{idx}_hit.jpg"), frame)
+                cv2.imwrite(str(imgs_folder / f"{video_folder.name}_{idx}_hit_0.jpg"), frame)
+            elif idx in random_idx:
+                cv2.imwrite(str(imgs_folder / f"{video_folder.name}_{idx}_mov_2.jpg"), frame)
             else:
-                cv2.imwrite(str(imgs_folder / f"{video_folder.name}_{idx}_x.jpg"), frame)
+                cv2.imwrite(str(imgs_folder / f"{video_folder.name}_{idx}_xhit_1.jpg"), frame)
 
         idx += 1
         
