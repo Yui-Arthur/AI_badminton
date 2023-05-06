@@ -2,11 +2,11 @@ import cv2
 
 import pandas as pd
 
-vid_id = "00005"
+vid_id = "00003"
 
 cap = cv2.VideoCapture(f'./part1/part1/train/{vid_id}/{vid_id}.mp4')
 
-ball_labels = pd.read_csv(f"./{vid_id}_predict.csv")
+ball_labels = pd.read_csv(f"./ball_pred/ball_pred/{vid_id}_predict.csv")
 labels = pd.read_csv(f'./part1/part1/train/{vid_id}/{vid_id}_S2.csv')
 
 last_ball_frame = [0,0]
