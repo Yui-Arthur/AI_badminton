@@ -6,7 +6,7 @@ vid_id = "00167"
 
 cap = cv2.VideoCapture(f'./part1/part1/val/{vid_id}/{vid_id}.mp4')
 
-labels = pd.read_csv(f"./result.csv")
+labels = pd.read_csv(f"./all_ball_pos.csv")
 
 
 idx = 1
@@ -25,6 +25,7 @@ while cap.isOpened():
         break
 
     # diff = cv2.subtract(prev_frame[-1] , frame)
+
     if idx in labels['HitFrame'].add(prev_idx).values and idx > prev_idx:
         # print(frame , prev_frame[-1])
         # diff = cv2.subtract(frame, prev_frame[-1])

@@ -5,5 +5,7 @@ yolo*
 tempCodeRunnerFile.py
 inference.py
 models/
-*.csv
+./*.csv
 ball_pred/
+utils/__pycache__
+move_dataset

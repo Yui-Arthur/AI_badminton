@@ -7,6 +7,7 @@ from multiprocessing import Process, Pool
 from itertools import repeat
 import math
 from argparse import Namespace
+from utils.homography_transformation import getPerspectiveTransformMatrix
 
 
 def hit_label_append(video_folder , labels_folder , config):
@@ -59,12 +60,21 @@ def get_frame(video_folder , imgs_folder , capture_frame , target_frame_num , co
 
     # 參數 - 圖片大小 、 裁切範圍 、 縮放倍率
     img_sizex , img_sizey = config.img_size
-    crop_xt , crop_yt = config.crop_top
-    crop_xd , crop_yd = config.crop_bottom
-    resize_factor = config.resize_factor
-    new_sizex = int(( img_sizex - crop_xt - crop_xd ) / resize_factor )
-    new_sizey = int(( img_sizey - crop_yt - crop_yd ) / resize_factor )
 
+    if config.homography != True:
+        crop_xt , crop_yt = config.crop_top
+        crop_xd , crop_yd = config.crop_bottom
+        resize_factor = config.resize_factor
+        new_sizex = int(( img_sizex - crop_xt - crop_xd ) / resize_factor )
+        new_sizey = int(( img_sizey - crop_yt - crop_yd ) / resize_factor )
+    else:
+        new_sizex , new_sizey = 330 , 150
+        matrix , corner , f = getPerspectiveTransformMatrix(f'{video_folder}/{video_folder.name}.mp4')
+
+    if f == -1:
+        print("Corner Failed")
+        return
+    
     idx = 0
     while cap.isOpened():
         ret, frame = cap.read()
@@ -72,17 +82,22 @@ def get_frame(video_folder , imgs_folder , capture_frame , target_frame_num , co
             break
         
         if idx in capture_frame:
-        
-            frame = frame[crop_yt : img_sizey-crop_yd , crop_xt : img_sizex - crop_xd]
-            frame = cv2.resize(frame, (new_sizex , new_sizey), interpolation=cv2.INTER_AREA)
-
-            cv2.imwrite(str(imgs_folder / f"{video_folder.name}_{idx}._{capture_frame[idx]}.jpg"), frame)
+            
+            if config.homography != True:
+                frame = frame[crop_yt : img_sizey-crop_yd , crop_xt : img_sizex - crop_xd]
+                frame = cv2.resize(frame, (new_sizex , new_sizey), interpolation=cv2.INTER_AREA)
+                cv2.imwrite(str(imgs_folder / f"{video_folder.name}_{idx}._{capture_frame[idx]}.jpg"),frame)
+            else:
+                imgOutput = cv2.warpPerspective(frame, matrix, (img_sizex , img_sizey), cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0))
+                imgOutput = cv2.resize(imgOutput, (new_sizex , new_sizey), interpolation=cv2.INTER_AREA)
+                cv2.imwrite(str(imgs_folder / f"{video_folder.name}_{idx}._{capture_frame[idx]}.jpg"),imgOutput)
 
         idx += 1
         cv2.waitKey(1)
 
-    cap.release()
+        ret, frame = cap.read()
 
+    cap.release()
 
 def get_labels_and_frame(video_folder , imgs_folder, labels_folder , config):
     
@@ -98,13 +113,50 @@ def get_labels_and_frame(video_folder , imgs_folder, labels_folder , config):
     get_frame(video_folder , imgs_folder , capture_frame , target_frame_num , config.imgs_setting)
 
     
-def concat_ball_pred_files(ball_data_folder): 
+def concat_ball_pos_files(ball_data_folder): 
 
+    all_ball_csv = pd.read_csv("./csv/sample_ball_pos.csv")
     
     for ball_csv in ball_data_folder:
-        df = pd.read_csv(ball_csv)
+        vid_name = ball_csv.name.split('_')[0]
+        
+        # print(vid_name)
+        try:
+            df = pd.read_csv(ball_csv)
+            df = df.drop(columns=['Time'])
+            df.insert(0 , "VideoName" , [vid_name for i in range(len(df))])
 
-    pass
+            all_ball_csv = pd.concat([all_ball_csv , df])
+        except:
+            print(f"{ball_csv.name} Error")
+    print(all_ball_csv)
+
+    all_ball_csv.to_csv("all_ball_pos.csv" , index=False)
+
+def concat_hit_labels_files(vid_folder): 
+
+    all_hit_csv = pd.read_csv("./csv/sample_hit_labels.csv")
+    print(all_hit_csv)
+    for vid in vid_folder:
+
+        try:
+            lables_csv = Path(f"{vid}/{vid.name}_S2.csv")
+            df = pd.read_csv(lables_csv)
+            
+            vid_name = vid.name
+            df.insert(0 , "VideoName" , [vid_name for i in range(len(df))])
+            all_hit_csv = pd.concat([all_hit_csv , df])
+            
+            # print(len(df.columns))
+            if len(all_hit_csv.columns) == 17:
+                print(vid)
+                break
+        except:
+            print(f"{vid} Error")
+    
+    print(all_hit_csv)
+    all_hit_csv.to_csv("all_hit_labels.csv" , index = False)    
+
 if __name__ == '__main__':
 
     config = Namespace(
@@ -122,6 +174,8 @@ if __name__ == '__main__':
         ),
         # img setting
         imgs_setting = Namespace(
+            homography = True,
+            new_image_size = (330,150),
             img_size  = (1280 , 720),
             crop_top = (200 , 100),
             crop_bottom = (200 , 0),
@@ -149,10 +203,13 @@ if __name__ == '__main__':
     imgs_folder_list = [valid_folder / 'images' if int(i.name.strip('0')) % 10 == 1 else train_folder / 'images' for i in data_folder_list ]
     labels_folder_list = [valid_folder / 'labels' if int(i.name.strip('0')) % 10 == 1 else train_folder / 'labels' for i in data_folder_list ]
 
-    get_labels_and_frame(data_folder_list[0], imgs_folder_list[0],labels_folder_list[0] , Namespace(labels_setting = config.labels_setting , imgs_setting = config.imgs_setting))
+    # get_labels_and_frame(data_folder_list[0], imgs_folder_list[0],labels_folder_list[0] , Namespace(labels_setting = config.labels_setting , imgs_setting = config.imgs_setting))
     # CPU_Core_num = 6
     # pool = Pool(processes = CPU_Core_num)
     # pool.starmap(get_labels_and_frame, zip(data_folder_list , imgs_folder_list , labels_folder_list) , chunksize = int(len(data_folder_list) / CPU_Core_num))
+
+    # concat_ball_pos_files(ball_data_folder_list)
+    concat_hit_labels_files(data_folder_list)
 
 
 
