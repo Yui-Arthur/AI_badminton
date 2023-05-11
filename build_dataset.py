@@ -20,8 +20,10 @@ def hit_label_append(video_folder , labels_folder , config):
     pick_non_hit_frame = config.pick_non_hit_frame
     random_size = len(pick_non_hit_frame) if str(labels_folder).split('\\')[1] == 'train' else len(pick_non_hit_frame) * config.valid_random_factor
     pick_frame = [i - math.floor(pick_hit_frame / 2) for i in range(pick_hit_frame)] + pick_non_hit_frame
-    target_frame_num = (pick_hit_frame + len(pick_non_hit_frame) + random_size) *  len(labels['HitFrame'])
     
+    labels.drop(labels[labels['Hitter'] == 'A'].index , inplace = True)
+    target_frame_num = (pick_hit_frame + len(pick_non_hit_frame) + random_size) *  len(labels['HitFrame'])
+    # print(labels['Hitter'])
     # hit label apppend
     for idx , sublabel in labels[['HitFrame' , 'ShotSeq']].iterrows():
         sample_label = labels.loc[labels['HitFrame'] == sublabel['HitFrame']]
@@ -54,8 +56,11 @@ def get_frame(video_folder , imgs_folder , capture_frame , target_frame_num , co
         if random_frame not in capture_frame:
             capture_frame[random_frame] = 2
 
+    # 0 hit
+    # 1 Prepare Hit
+    # 2 Move
     print(f"    HitFrame {len([1 for i in capture_frame.values() if i == 0 ])}")
-    print(f"    NonHitFrame {len([1 for i in capture_frame.values() if i == 1 ])}")
+    print(f"    Prepare Hit {len([1 for i in capture_frame.values() if i == 1 ])}")
     print(f"    MoveFrame {len([1 for i in capture_frame.values() if i == 2 ])}")
 
     # 參數 - 圖片大小 、 裁切範圍 、 縮放倍率
@@ -75,7 +80,7 @@ def get_frame(video_folder , imgs_folder , capture_frame , target_frame_num , co
         print("Corner Failed")
         return
     
-    idx = 0
+    idx = 1
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -90,7 +95,7 @@ def get_frame(video_folder , imgs_folder , capture_frame , target_frame_num , co
             else:
                 imgOutput = cv2.warpPerspective(frame, matrix, (img_sizex , img_sizey), cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0,0,0))
                 imgOutput = cv2.resize(imgOutput, (new_sizex , new_sizey), interpolation=cv2.INTER_AREA)
-                cv2.imwrite(str(imgs_folder / f"{video_folder.name}_{idx}._{capture_frame[idx]}.jpg"),imgOutput)
+                cv2.imwrite(str(imgs_folder / f"{video_folder.name}_{idx}_{capture_frame[idx]}.jpg"),imgOutput)
 
         idx += 1
         cv2.waitKey(1)
@@ -204,12 +209,17 @@ if __name__ == '__main__':
     labels_folder_list = [valid_folder / 'labels' if int(i.name.strip('0')) % 10 == 1 else train_folder / 'labels' for i in data_folder_list ]
 
     # get_labels_and_frame(data_folder_list[0], imgs_folder_list[0],labels_folder_list[0] , Namespace(labels_setting = config.labels_setting , imgs_setting = config.imgs_setting))
-    # CPU_Core_num = 6
-    # pool = Pool(processes = CPU_Core_num)
-    # pool.starmap(get_labels_and_frame, zip(data_folder_list , imgs_folder_list , labels_folder_list) , chunksize = int(len(data_folder_list) / CPU_Core_num))
+    CPU_Core_num = 6
+    pool = Pool(processes = CPU_Core_num)
+    pool.starmap(get_labels_and_frame, zip(
+            data_folder_list , 
+            imgs_folder_list , 
+            labels_folder_list , 
+            repeat(Namespace(labels_setting = config.labels_setting , imgs_setting = config.imgs_setting))) , 
+            chunksize = int(len(data_folder_list) / CPU_Core_num))
 
     # concat_ball_pos_files(ball_data_folder_list)
-    concat_hit_labels_files(data_folder_list)
+    # concat_hit_labels_files(data_folder_list)
 
 
 
