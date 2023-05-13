@@ -9,5 +9,4 @@ models/
 ball_pred/
 utils/__pycache__
 move_dataset
-sample_code/
 data/*
