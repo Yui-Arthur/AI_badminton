@@ -137,7 +137,7 @@ def concat_ball_pos_files(ball_data_folder):
         # print(vid_name)
         try:
             df = pd.read_csv(ball_csv)
-            df = df.drop(columns=['Time'])
+            # df = df.drop(columns=['Time'])
             df.insert(0 , "VideoName" , [vid_name for i in range(len(df))])
 
             all_ball_csv = pd.concat([all_ball_csv , df])
@@ -145,7 +145,7 @@ def concat_ball_pos_files(ball_data_folder):
             print(f"{ball_csv.name} Error")
     print(all_ball_csv)
 
-    all_ball_csv.to_csv("./csv/all_ball_pos.csv" , index=False)
+    all_ball_csv.to_csv("./csv/all_ball_pos_test_V2.csv" , index=False)
 
 def concat_hit_labels_files(vid_folder): 
 
@@ -178,7 +178,7 @@ if __name__ == '__main__':
         path_setting = Namespace(
             data_path = './data/part1/train/',
             dataset_path = './dataset',
-            ball_data_folder = './data/ball_pred',
+            ball_data_folder = './data/ball_pred_test_V2',
         ),
         # label setting
         labels_setting = Namespace(

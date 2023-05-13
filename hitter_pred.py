@@ -2,8 +2,7 @@ import pandas as pd
 import numpy as np
 import cv2
 
-all_hit_labels = pd.read_csv(f"./csv/all_hit_labels.csv")
-all_ball_labels = pd.read_csv(f"./csv/all_ball_pos_V2.csv")
+
 
 
 def show_frame(vid , odd_hit_range , even_hit_range):
@@ -36,16 +35,10 @@ def show_frame(vid , odd_hit_range , even_hit_range):
     while cv2.waitKey(10) == -1:
         pass
 
-success = 0
-fail = []
 
-for vid in range(1,801):
-    # vid = str(vid).rjust(5,"0")
-    # print(vid)
-    hit_labels = all_hit_labels[all_hit_labels['VideoName'] == vid]
-    ball_labels = all_ball_labels[all_ball_labels['VideoName'] == vid]
-    # print(hit_labels)
-    # print(hit_labels['HitFrame'])
+def guess_hitter(ball_labels , hit_labels):
+    
+
     ball_labels = ball_labels.drop(ball_labels[ball_labels['Visibility'] == 0].index)
 
 
@@ -56,30 +49,39 @@ for vid in range(1,801):
     frame_range = 3
     odd_hit_range = [i+j for i in odd_labels.values for j in range(-frame_range,frame_range+1)]
     even_hit_range = [i+j for i in even_labels.values for j in range(-frame_range,frame_range+1)]
-    # print(hit_range)
+    
     odd_ball_labels = ball_labels[(ball_labels['Frame'].isin(odd_hit_range))]['Y'].values
     even_ball_labels = ball_labels[(ball_labels['Frame'].isin(even_hit_range))]['Y'].values
                                 #    
-    # print(odd_ball_labels.mean())
-    # print(even_ball_labels.mean())
-    # print( hit_labels.iloc[0]['Hitter'])
 
-    # if((odd_ball_labels.mean() > even_ball_labels.mean())):
-    #     print("Guess B")
-    # else:
-    #     print("Guess A")
+
     y_range = 0
-    if((odd_ball_labels.mean() - y_range  > even_ball_labels.mean()) and hit_labels.iloc[0]['Hitter'] == 'B'):
-        success+=1
-    elif ((odd_ball_labels.mean() - y_range  < even_ball_labels.mean()) and hit_labels.iloc[0]['Hitter'] == 'A'):
-        success+=1
+    if((odd_ball_labels.mean() - y_range  > even_ball_labels.mean())):
+        return "B"
+    elif ((odd_ball_labels.mean() - y_range  < even_ball_labels.mean())):
+        return "A"
     else:
-        fail.append(vid)
+        return -1
+        
+
+all_hit_labels = pd.read_csv(f"./csv/all_hit_labels.csv")
+all_ball_labels = pd.read_csv(f"./csv/all_ball_pos_V2.csv")
+success = 0
+fail = []
+
+for vid in range(1,801):
+    # vid = str(vid).rjust(5,"0")
+    # print(vid)
+    hit_labels = all_hit_labels[all_hit_labels['VideoName'] == vid]
+    ball_labels = all_ball_labels[all_ball_labels['VideoName'] == vid]
+    
+    guess = guess_hitter(ball_labels , hit_labels)
+
+    if guess == hit_labels.iloc[0]['Hitter']:
+        success += 1
         
     # show_frame(vid , odd_hit_range ,even_hit_range)
 
-    
-            
 
 
 print(success/800)
