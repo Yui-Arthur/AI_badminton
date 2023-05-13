@@ -76,7 +76,7 @@ for vid in range(1,801):
     else:
         fail.append(vid)
         
-    show_frame(vid , odd_hit_range ,even_hit_range)
+    # show_frame(vid , odd_hit_range ,even_hit_range)
 
     
             

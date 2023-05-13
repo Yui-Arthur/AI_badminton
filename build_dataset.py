@@ -8,6 +8,7 @@ from itertools import repeat
 import math
 from argparse import Namespace
 from utils.homography_transformation import getPerspectiveTransformMatrix
+import numpy as np
 
 
 def hit_label_append(video_folder , labels_folder , config):
@@ -21,7 +22,8 @@ def hit_label_append(video_folder , labels_folder , config):
     random_size = len(pick_non_hit_frame) if str(labels_folder).split('\\')[1] == 'train' else len(pick_non_hit_frame) * config.valid_random_factor
     pick_frame = [i - math.floor(pick_hit_frame / 2) for i in range(pick_hit_frame)] + pick_non_hit_frame
     
-    labels.drop(labels[labels['Hitter'] == 'A'].index , inplace = True)
+    # only one hitter
+    # labels.drop(labels[labels['Hitter'] == 'A'].index , inplace = True)
     target_frame_num = (pick_hit_frame + len(pick_non_hit_frame) + random_size) *  len(labels['HitFrame'])
     # print(labels['Hitter'])
     # hit label apppend
@@ -40,17 +42,15 @@ def hit_label_append(video_folder , labels_folder , config):
     append_label.to_csv(labels_folder / f"{video_folder.name}.csv" , index=False)
 
     
-    
     capture_frame = {i + j:0 if j == 0 else 1 for i in labels['HitFrame'] for j in pick_frame}
 
     return target_frame_num , capture_frame   
 
 def get_frame(video_folder , imgs_folder , capture_frame , target_frame_num , config):
-
     cap = cv2.VideoCapture(f'{video_folder}/{video_folder.name}.mp4')
     video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    while len(capture_frame) < target_frame_num:
+    while len(capture_frame) < target_frame_num and len(capture_frame) != video_length:
         random_frame = random.randint(0 , video_length)
 
         if random_frame not in capture_frame:
@@ -75,10 +75,19 @@ def get_frame(video_folder , imgs_folder , capture_frame , target_frame_num , co
     else:
         new_sizex , new_sizey = 330 , 150
         matrix , corner , f = getPerspectiveTransformMatrix(f'{video_folder}/{video_folder.name}.mp4')
+        
+        if f == -1:
+            print("Corner Failed")
+            return
+        
+        corner[0][1] -= 70
+        corner[3][1] -= 70
+        # print(corner)
+        old = np.float32(corner)
+        new = np.float32([[0,0], [0,img_sizey-1], [img_sizex-1,img_sizey-1] , [img_sizex-1,0]])
+        matrix = cv2.getPerspectiveTransform(old , new)
 
-    if f == -1:
-        print("Corner Failed")
-        return
+    
     
     idx = 1
     while cap.isOpened():
@@ -136,7 +145,7 @@ def concat_ball_pos_files(ball_data_folder):
             print(f"{ball_csv.name} Error")
     print(all_ball_csv)
 
-    all_ball_csv.to_csv("all_ball_pos.csv" , index=False)
+    all_ball_csv.to_csv("./csv/all_ball_pos.csv" , index=False)
 
 def concat_hit_labels_files(vid_folder): 
 
@@ -167,14 +176,14 @@ if __name__ == '__main__':
     config = Namespace(
         # path setting
         path_setting = Namespace(
-            data_path = './part1/part1/train/',
+            data_path = './data/part1/train/',
             dataset_path = './dataset',
-            ball_data_folder = './ball_pred/ball_pred',
+            ball_data_folder = './data/ball_pred',
         ),
         # label setting
         labels_setting = Namespace(
             pick_hit_frame = 1,
-            pick_non_hit_frame = [-3 ,-2 ,2, 3],
+            pick_non_hit_frame = [-5,-4,-3 ,-2 ,-1 ,1,2, 3,4,5],
             valid_random_factor = 2,
         ),
         # img setting
@@ -209,16 +218,17 @@ if __name__ == '__main__':
     labels_folder_list = [valid_folder / 'labels' if int(i.name.strip('0')) % 10 == 1 else train_folder / 'labels' for i in data_folder_list ]
 
     # get_labels_and_frame(data_folder_list[0], imgs_folder_list[0],labels_folder_list[0] , Namespace(labels_setting = config.labels_setting , imgs_setting = config.imgs_setting))
-    CPU_Core_num = 6
-    pool = Pool(processes = CPU_Core_num)
-    pool.starmap(get_labels_and_frame, zip(
-            data_folder_list , 
-            imgs_folder_list , 
-            labels_folder_list , 
-            repeat(Namespace(labels_setting = config.labels_setting , imgs_setting = config.imgs_setting))) , 
-            chunksize = int(len(data_folder_list) / CPU_Core_num))
+    # get_labels_and_frame(Path("part1/part1/train/00310"), imgs_folder_list[0],labels_folder_list[0] , Namespace(labels_setting = config.labels_setting , imgs_setting = config.imgs_setting))
+    # CPU_Core_num = 6
+    # pool = Pool(processes = CPU_Core_num)
+    # pool.starmap(get_labels_and_frame, zip(
+    #         data_folder_list , 
+    #         imgs_folder_list , 
+    #         labels_folder_list , 
+    #         repeat(Namespace(labels_setting = config.labels_setting , imgs_setting = config.imgs_setting))) , 
+    #         chunksize = int(len(data_folder_list) / CPU_Core_num))
 
-    # concat_ball_pos_files(ball_data_folder_list)
+    concat_ball_pos_files(ball_data_folder_list)
     # concat_hit_labels_files(data_folder_list)
 
 

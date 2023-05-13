@@ -9,15 +9,15 @@ from utils.homography_transformation import getPerspectiveTransformMatrix
 if __name__ == '__main__':
     width , height = 1280 , 720
     
-    for i in range(5,801): 
+    for i in range(1,801): 
         vid_id = str(i).rjust(5,'0')
         print(vid_id)
         vid_path = Path(f'./part1/part1/train/{vid_id}/{vid_id}.mp4')
         # matrix , border , _ = getPerspectiveTransformMatrix(str(vid_path))
         matrix , corner , f = getPerspectiveTransformMatrix(str(vid_path))
 
-        corner[0][1] -= 5
-        corner[3][1] -= 5
+        # corner[0][1] -= 70
+        # corner[3][1] -= 70
         
 
         old = np.float32(corner)
