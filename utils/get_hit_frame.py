@@ -10,7 +10,6 @@ import argparse
 import pandas as pd
 
 
-
 def angle(v1, v2):
     dx1 = v1[2] - v1[0]
     dy1 = v1[3] - v1[1]
@@ -81,17 +80,17 @@ def get_hit_pred(ball_csv):
     Predict_hit_points = np.zeros(len(frames))
     ang = np.zeros(len(frames))
     # from scipy.signal import find_peaks
-    peaks, properties = find_peaks(y, prominence=10)
+    peaks, properties = find_peaks(y, prominence=15)
 
     # print(peaks)
 
-    if(len(peaks) >= 10):
+    if(len(peaks) >= 15):
         lower = np.argmin(y[peaks[0]:peaks[1]])
-        if (y[peaks[0]] - lower) < 10:
+        if (y[peaks[0]] - lower) < 15:
             peaks = np.delete(peaks,0)
 
         lower = np.argmin(y[peaks[-2]:peaks[-1]])
-        if (y[peaks[-1]] - lower) < 10:
+        if (y[peaks[-1]] - lower) < 15:
             peaks = np.delete(peaks,-1)
 
     # print()
@@ -99,14 +98,14 @@ def get_hit_pred(ball_csv):
     start_point = 0
 
     for i in range(len(y)-1):
-        if((y[i] - y[i+1]) / (z[i+1] - z[i]) >= 10):
+        if((y[i] - y[i+1]) / (z[i+1] - z[i]) >= 15):
             start_point = i+front_zeros[i]
             Predict_hit_points[int(start_point)] = 1
             # print(int(start_point))
             break
 
     # print('End : ')
-    end_point = 10000
+    end_point = 1000
 
     # print('Predict points : ')
     # plt.plot(z,y*-1,'-')
@@ -126,19 +125,19 @@ def get_hit_pred(ball_csv):
         plt.plot(z[start:end],y[start:end]*-1,'-')
         lower = np.argmin(y[start:end]) #找到最低谷(也就是從最高點開始下墜到下一個擊球點),以此判斷扣殺或平球軌跡
         for j in range(start+lower, end+1):
-            if(j-(start+lower) > 10) and (end - j > 10):
-                if (y[j] - y[j-1])*3 < (y[j+1] - y[j]):
+            if(j-(start+lower) > 5) and (end - j > 5):
+                if (y[j] - y[j-1])*30 < (y[j+1] - y[j]):
                     # print(j, end=',')
                     ang[j+int(front_zeros[j])] = 1
 
                 point = [x[j],y[j]]
                 line=[x[j-1],y[j-1],x[j+1],y[j+1]]
                 # if get_point_line_distance(point,line) > 2.5:
-                if angle([x[j-1],y[j-1], x[j],y[j]],[x[j],y[j], x[j+1],y[j+1]]) > 130:
+                if angle([x[j-1],y[j-1], x[j],y[j]],[x[j],y[j], x[j+1],y[j+1]]) > 85:
                     # print(j, end=',')
                     ang[j+int(front_zeros[j])] = 1
 
-    ang, _ = find_peaks(ang, distance=15)
+    ang, _ = find_peaks(ang, distance=280 )#30
     #final_predict, _  = find_peaks(Predict_hit_points, distance=10)
     for i in ang:
         Predict_hit_points[i] = 1
@@ -151,4 +150,3 @@ def get_hit_pred(ball_csv):
     # print('Final predict : ')
     # print(list(final_predict))
     return list(final_predict)
-

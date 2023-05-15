@@ -31,7 +31,7 @@ def get_confusion_matrix():
             else:
                 confusion_matrix[1][0] +=1
 
-        if len(success_frame) == len(hit_labels):
+        if len(pred) == len(hit_labels):
             success_vid +=1
 
         confusion_matrix[0][1] += len(hit_labels) - len(success_frame)
@@ -40,13 +40,14 @@ def get_confusion_matrix():
     print(success_vid)
     print(np.diag(confusion_matrix)/confusion_matrix.sum(1))
 
-
+get_confusion_matrix()
+exit()
 result = pd.read_csv("./csv/sample_result.csv")
-all_ball_labels = pd.read_csv(f"./csv/all_ball_pos_V2.csv")
+all_ball_labels = pd.read_csv(f"./csv/all_ball_pos_valid_V2.csv")
 
 for vid in range(1,170):
         # print(vid)
-    ball_csv = f"./data/ball_pred_V2/{str(vid).rjust(5,'0')}_ball.csv"
+    ball_csv = f"./data/ball_pred_valid_V2/{str(vid).rjust(5,'0')}_ball.csv"
     try:
         pred = get_hit_pred(ball_csv)
     except:
