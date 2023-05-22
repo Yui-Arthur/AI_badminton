@@ -1,7 +1,7 @@
 ##  <div align="center">生成影像訓練資料集及整合檔案 ```build_dataset.py``` </div>
 ### <div align="center">生成的資料集搭配```train_img_ballpos.ipynb```及```train.ipynb```使用 </div>
 ### <div align="center">整合的檔案搭配```only_ball_dataset.py```及```pred_model.py```使用 </div>
-<details open>
+<details>
 <summary>參數及函式</summary>
 
 ```python
@@ -47,7 +47,7 @@ pool.starmap(get_labels_and_frame, zip(
 
 ##  <div align="center">生成羽球訓練資料集 ```only_ball_dataset.py```</div>
 ### <div align="center">生成的資料集搭配```train_only_ball_pos.ipynb```使用 <div>
-<details open>
+<details>
 <summary>參數</summary>
 
 
@@ -65,7 +65,7 @@ f_range = 15    # 擊球幀要加入前後f_range幀羽球位置作為資料
 ##  <div align="center">訓練影像模型(efficientnet_v2_s) ```kaggle/train.py``` </div>
 ### <div align="center">需使用```build_dataset.py```生成的資料集 </div>
 
-<details open>
+<details>
 <summary>參數</summary>
 
 ```python
@@ -98,7 +98,7 @@ nb_classes = 3          # 有幾個class
 ##  <div align="center">訓練羽球模型(self-attention) ```kaggle/train_only_ball_pos.ipynb``` </div>
 ### <div align="center">需使用```only_ball_dataset.py```生成的資料集 </div>
 
-<details open>
+<details>
 <summary>參數</summary>
 
 ```python
@@ -125,7 +125,7 @@ _exp_name = "hit_model" # best_model的名稱
 ##  <div align="center">訓練綜合模型(羽球+影像) ```kaggle/train_img_ballpos.ipynb``` </div>
 ### <div align="center">需使用```build_dataset.py```生成的資料集 </div>
 
-<details open>
+<details>
 <summary>參數</summary>
 
 ```python
@@ -178,7 +178,7 @@ _exp_name = "hit_model" # best_model的名稱
     },
 }
 ```
-<details open>
+<details>
 <summary>參數及函式</summary>
 
 ```python
@@ -201,7 +201,7 @@ model_pred = get_model_pred(model , all_ball[all_ball['VideoName'] == vid],
 
 ##  <div align="center">使用模型預測結果 + 擊球事件判斷進行結果預測 ```pred_model.py``` </div>
 
-<details open>
+<details>
 <summary>參數及函式</summary>
 
 ### ```get_confusion_matrix()``` 用於回測訓練資料
@@ -220,3 +220,6 @@ state = "test"  # 現在要進行預測的資料
 result.to_csv("" , index=False) # 預測結果的檔名
 ```
 </details>
+
+## csv 內有放入所有所需資料
+## model_pred 內有我們模型所預測出來的所有資料
