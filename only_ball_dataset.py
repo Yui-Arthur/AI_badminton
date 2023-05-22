@@ -3,14 +3,14 @@ import random
 import json
 
 
-def data_proc(frame_set):
+def data_proc(frame_set , f_range):
     rel_dic = {}
     for i in frame_set:
         vid , frame , label = i.split('_')
         vid = int(vid)
         frame = int(frame)
         label = int(label)
-        f_range = 15
+        # f_range = 15
         cond = (all_ball_pos['VideoName'] == vid) & (abs(all_ball_pos['Frame'] - frame) <= f_range)  
         ball_frame = all_ball_pos[cond]
 
@@ -40,7 +40,6 @@ all_ball_pos = pd.read_csv("./csv/all_ball_pos_V2_smooth.csv")
 all_hit_labels = pd.read_csv("./csv/all_hit_labels.csv")
 
 all_hit_labels = all_hit_labels[['VideoName' , 'HitFrame']]
-
 train_frame_set = set()
 valid_frame_set = set()
 hit_range = 7
@@ -70,8 +69,9 @@ for vid in all_hit_labels['VideoName'].drop_duplicates().values:
                 train_frame_set.add(f"{vid}_{pick_frame}_1")
             idx+=1
 
-train_data = data_proc(train_frame_set)
-valid_data = data_proc(valid_frame_set)
+f_range = 15
+train_data = data_proc(train_frame_set , f_range)
+valid_data = data_proc(valid_frame_set , f_range)
 
 with open('./dataset/train.json' , 'w') as f:
     json.dump(train_data , f)

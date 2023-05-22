@@ -218,7 +218,7 @@ if __name__ == '__main__':
     labels_folder_list = [valid_folder / 'labels' if int(i.name.strip('0')) % 10 == 1 else train_folder / 'labels' for i in data_folder_list ]
 
     # get_labels_and_frame(data_folder_list[0], imgs_folder_list[0],labels_folder_list[0] , Namespace(labels_setting = config.labels_setting , imgs_setting = config.imgs_setting))
-    # get_labels_and_frame(Path("part1/part1/train/00310"), imgs_folder_list[0],labels_folder_list[0] , Namespace(labels_setting = config.labels_setting , imgs_setting = config.imgs_setting))
+    get_labels_and_frame(Path("data/part1/train/00310"), imgs_folder_list[0],labels_folder_list[0] , Namespace(labels_setting = config.labels_setting , imgs_setting = config.imgs_setting))
     # CPU_Core_num = 6
     # pool = Pool(processes = CPU_Core_num)
     # pool.starmap(get_labels_and_frame, zip(
@@ -228,7 +228,7 @@ if __name__ == '__main__':
     #         repeat(Namespace(labels_setting = config.labels_setting , imgs_setting = config.imgs_setting))) , 
     #         chunksize = int(len(data_folder_list) / CPU_Core_num))
 
-    concat_ball_pos_files(ball_data_folder_list)
+    # concat_ball_pos_files(ball_data_folder_list)
     # concat_hit_labels_files(data_folder_list)
 
 
