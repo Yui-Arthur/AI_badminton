@@ -92,8 +92,9 @@ nb_classes = 3          # 有幾個class
 </details>
 
 ###  <div align="center">訓練結果acc = 0.74443</div>
-![](./image/image_with_ball_acc.png)
-
+<div align="center">
+    <img src="./image/only_image_acc.png" height=50% , width=50%> 
+</div>
 
 ##  <div align="center">訓練羽球模型(self-attention) ```kaggle/train_only_ball_pos.ipynb``` </div>
 ### <div align="center">需使用```only_ball_dataset.py```生成的資料集 </div>
@@ -119,8 +120,10 @@ _exp_name = "hit_model" # best_model的名稱
 </details>
 
 ###  <div align="center">訓練結果acc = 0.70305</div>
-![](./image/only_ball_acc.png)
- 
+<div align="center">
+    <img src="./image/only_ball_acc.png" height=50% , width=50%> 
+</div>
+
 
 ##  <div align="center">訓練綜合模型(羽球+影像) ```kaggle/train_img_ballpos.ipynb``` </div>
 ### <div align="center">需使用```build_dataset.py```生成的資料集 </div>
@@ -159,7 +162,9 @@ _exp_name = "hit_model" # best_model的名稱
 </details>
 
 ###  <div align="center">訓練結果acc = 0.81594</div>
-![](./image/image_with_ball_acc.png)
+<div align="center">
+    <img src="./image/image_with_ball_acc.png" height=50% , width=50%> 
+</div>
 
 
 ##  <div align="center">使用模型進行預測 ```gen_model_pred.py``` </div>
