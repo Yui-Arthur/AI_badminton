@@ -1,3 +1,72 @@
+# <div align="center"> 2023 AI CUP 教電腦看羽球 </div>
+
+## <div align="center"> csv 資料夾 </div>
+
+### ``` all_ball_pos_{}.csv```為train/valid/test影片使用TrackNetV2，抓出羽球位置後整理成一個csv檔，檔案結尾有```smooth```的代表經過官方提供的```denoise.py```處理，column如下
+
+
+| VideoName | Frame | Visibility |X | Y |
+|  ----  | ----  |  ----  | ----  | ----  |
+
+
+
+### ``` all_hit_labels.csv```為官方提供train labels整理成一個csv檔，column如下
+
+
+|VideoName|ShotSeq|HitFrame|Hitter|RoundHead|Backhand|BallHeight|LandingX|LandingY|HitterLocationX|HitterLocationY|DefenderLocationX|DefenderLocationY|BallType|Winner
+|  ----  | ----  |  ----  | ----  | ----  |  ----  | ----  |  ----  | ----  | ----  |  ----  | ----  |  ----  | ----  | ----  |
+
+
+<br>
+
+## <div align="center">model_pred資料夾</div>
+### model_pred內有我們模型所預測出來的所有資料，JSON檔案格式如下
+```json
+{
+    "video_id": {
+        "frame_index": label,
+        "frame_index": label,
+        "frame_index": label
+    },
+    "video_id": {
+        "frame_index": label,
+        "frame_index": label,
+        "frame_index": label
+    },
+}
+```
+### 檔案名稱有```with_img```代表是羽球+影像一同訓練的模型(```train_img_ballpos.ipynb```)
+### 反之沒有```with_img```代表是只有羽球位置訓練的模型(```train_only_ball_pos.ipynb```)
+### 檔案結尾有```smooth```的代表經過官方提供的```denoise.py```處理
+<br>
+
+##  <div align="center">使用模型預測結果 + 擊球事件判斷進行結果預測 ```pred_model.py``` </div>
+
+<details>
+<summary>參數及函式</summary>
+
+### ```get_confusion_matrix()``` 用於回測訓練資料
+```python
+# 影片資料路徑 (需經過build_dataset.py的concat_hit_labels_files()合成一份檔案)
+all_hit_labels = pd.read_csv(f"") 
+# 模型預測資料路徑 (需經過gen_model_pred.py生成)
+with open(f"") as f:
+    all_model_pred_with_img = json.load(f)
+
+# TrackNet羽球的路徑
+ball_csv = f"./data/ball_pred_V2{smooth}/{str(vid).rjust(5,'0')}_ball.csv"
+
+smooth = ""     # 羽球位置是否經過smooth
+state = "test"  # 現在要進行預測的資料
+result.to_csv("" , index=False) # 預測結果的檔名
+```
+</details>
+<br>
+
+
+## <div align="center">以下是重現模型訓練所需要的流程</div>
+* * *
+
 ##  <div align="center">生成影像訓練資料集及整合檔案 ```build_dataset.py``` </div>
 ### <div align="center">生成的資料集搭配```train_img_ballpos.ipynb```及```train.ipynb```使用 </div>
 ### <div align="center">整合的檔案搭配```only_ball_dataset.py```及```pred_model.py```使用 </div>
@@ -204,27 +273,5 @@ model_pred = get_model_pred(model , all_ball[all_ball['VideoName'] == vid],
 
 </details>
 
-##  <div align="center">使用模型預測結果 + 擊球事件判斷進行結果預測 ```pred_model.py``` </div>
 
-<details>
-<summary>參數及函式</summary>
 
-### ```get_confusion_matrix()``` 用於回測訓練資料
-```python
-# 影片資料路徑 (需經過build_dataset.py的concat_hit_labels_files()合成一份檔案)
-all_hit_labels = pd.read_csv(f"") 
-# 模型預測資料路徑 (需經過gen_model_pred.py生成)
-with open(f"") as f:
-    all_model_pred_with_img = json.load(f)
-
-# TrackNet羽球的路徑
-ball_csv = f"./data/ball_pred_V2{smooth}/{str(vid).rjust(5,'0')}_ball.csv"
-
-smooth = ""     # 羽球位置是否經過smooth
-state = "test"  # 現在要進行預測的資料
-result.to_csv("" , index=False) # 預測結果的檔名
-```
-</details>
-
-## csv 內有放入所有所需資料
-## model_pred 內有我們模型所預測出來的所有資料
