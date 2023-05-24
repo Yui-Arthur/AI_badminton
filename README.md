@@ -65,7 +65,7 @@ result.to_csv("" , index=False) # 預測結果的檔名
 
 
 ## <div align="center">以下是重現模型訓練所需要的流程</div>
-* * *
+
 
 ##  <div align="center">生成影像訓練資料集及整合檔案 ```build_dataset.py``` </div>
 ### <div align="center">生成的資料集搭配```train_img_ballpos.ipynb```及```train.ipynb```使用 </div>
